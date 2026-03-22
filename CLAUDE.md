@@ -29,6 +29,26 @@ index.html    # Main page (currently: "Coming soon" placeholder)
 
 ---
 
+## Design Language
+
+The corporate website uses the **institutional surface** design language
+defined in `todotik-app` §7.7.  This is the quiet, text-dense, trust-signalling
+counterpart to the card-based product UI.
+
+Full specification: [`docs/design-language.md`](docs/design-language.md)
+
+Key principles: quiet frame (single-column prose), legal prose style,
+restrained brand identity, no animation.  Same Inter font, same Tailwind
+base, same 24 locales and RTL support as the product app.
+
+## Sister Repos
+
+| Repo | Relationship |
+|------|-------------|
+| `TodoTik/todotik-app` | Product app — card-based UX; §7.7 defines the platform design language including the institutional surface that this site implements |
+| `TodoTik/todotik-identity` | Identity & trust service — I-9 (i18n, RTL, autofill), I-9.4 (institutional pages in auth context), I-10 (UX card catalogue) |
+| `TodoTik/todotik-ops` | Infrastructure, deployment, operational context |
+
 ## Conventions
 
 - Keep `main` always deployable — Cloudflare Pages deploys on every push

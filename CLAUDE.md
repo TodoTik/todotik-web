@@ -54,3 +54,12 @@ base, same 24 locales and RTL support as the product app.
 - Keep `main` always deployable — Cloudflare Pages deploys on every push
 - Static assets (images, PDFs, logos) that are large or reused across contexts → `todotik-public` R2, not this repo
 - If a framework is added (e.g. Astro, Next.js), update this CLAUDE.md with build/dev instructions
+
+## Vendored Assets & Browser Caching
+
+If this repo ever serves vendored JavaScript bundles with long-lived
+`Cache-Control` headers (as `todotik-identity` does for the Scalar API
+reference), be aware that browser HTTP caching will hide changes after
+copying a new bundle.  Bypass via hard refresh, DevTools "Disable cache",
+or incognito window.  See `todotik-identity/CLAUDE.md` § "Vendored Scalar
+Bundle" for the reference workflow.

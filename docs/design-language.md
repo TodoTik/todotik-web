@@ -247,7 +247,7 @@ Corporate-specific requirements:
 
 ## Internationalisation
 
-Same 23 locales as the product app (`todotik-identity` I-9.1).
+Same 31 locales as the product app (`todotik-identity` I-9.1).
 
 - RTL layout support: `dir="rtl"` on `<html>` for Arabic, Hebrew, Persian.
   Logical CSS properties throughout (no physical `left`/`right`).

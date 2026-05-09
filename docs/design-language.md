@@ -78,21 +78,85 @@ baseline.  Override only where the brand requires it.
 
 ### Colour
 
-The corporate website uses a restrained subset of the brand palette:
+The TodoTik brand palette is organised in two layers:
 
-| Role | Colour | Hex | Usage |
-|------|--------|-----|-------|
-| Primary text | Near-black | `#1a1a2e` | Body text, headings |
-| Secondary text | Dark grey | `#4a4a6a` | Captions, metadata, footer text |
-| Brand accent | Cyan | `#4CC4DC` | Logo mark, one or two accent elements (links, active nav) |
-| Brand secondary | Navy | `#304050` | Logo wordmark, heading text (alternative to near-black) |
-| Background | White | `#ffffff` | Page background |
-| Surface | Light grey | `#f8f9fa` | Code blocks, callout boxes, alternating section backgrounds |
-| Border | Pale grey | `#e5e7eb` | Horizontal rules, section dividers, footer border |
+- **Structural** — page chrome (text, surface, border, background).  Each
+  surface picks the variant its background calls for.
+- **Semantic** — meaning-bearing roles applied across all TodoTik surfaces
+  (product app, identity screens, corporate website).  Surfaces SHOULD bind
+  page-level design tokens to these semantic names so the visual signal of
+  "this is a warning" or "this is a familiar value" is identical wherever it
+  appears.
 
-No gradients.  No shadows.  No elevation.  Links use the brand cyan; visited
-links use a darker shade.  Interactive states (hover, focus) are subtle —
-underline weight change or opacity shift, never colour animation.
+Role names describe **purpose**, never the colour value itself.  A role
+called `accent` keeps its meaning if the brand cyan is ever re-tuned; a role
+called `cyan` would have to be renamed.
+
+#### Structural roles
+
+| Role | Light | Dark | Usage |
+|------|-------|------|-------|
+| Primary text | `#1A1A2E` | `#E8E8EC` | Body text, headings |
+| Secondary text | `#4A4A6A` | `#999999` | Captions, metadata, footer text |
+| Background | `#FFFFFF` | `#1A1A2E` | Page background |
+| Surface | `#F8F9FA` | `#252540` | Cards, callout boxes, alternating sections |
+| Border | `#E5E7EB` | `#3A3A55` | Horizontal rules, section dividers, footer border |
+
+#### Semantic roles
+
+| Role | Light | Dark | Conveys |
+|------|-------|------|---------|
+| **Accent** | `#4CC4DC` | `#4CC4DC` | Brand identity — logo mark, links, focus, hover emphasis |
+| **Accent secondary** | `#304050` | `#7C8A9E` | Logo wordmark, heading text alternative (the corporate website uses this in the header) |
+| **Success** | `#43A047` | `#66BB6A` | Verified factors, completed actions, confirmations |
+| **Caution** | `#E8A838` | `#F0C869` | Recoverable issues, soft warnings — *something might be wrong, proceed carefully*; orange-leaning amber, distinct from attention and familiarity |
+| **Attention** | `#F4C100` | `#FFD93D` | "Needs action" / "needs attention" — vibrant, glowing gold; signals that the user is being prompted to do something **without** implying anything is wrong |
+| **Danger** | `#C44444` | `#E57373` | Destructive operations, errors, irrecoverable failures |
+| **Info** | `#4A6FA5` | `#7B9FCF` | Neutral informational notices — distinct from secondary text; use only when the visual signal "this is information" carries weight |
+| **Familiarity** | `#E6A94D` | `#E6B870` | Recognised entities, duplicates, déjà vu — desaturated "old paper" amber |
+
+##### How surfaces apply these
+
+Surface stylesheets MAY define page-level design tokens (e.g. a card's
+verified-state border colour, a button's hover ring) — those are page-design
+names, not brand roles.  Their **values** SHOULD be sourced from semantic
+roles wherever the meaning matches:
+
+```css
+/* Page-level design token, value comes from a semantic role */
+--card-recognised-border: var(--familiar);
+--check-color:            var(--success);
+.acct-badge.warn          { color: var(--caution); }
+```
+
+The brand guideline does not need a "success border" or "verified card
+fill" role — those are surface-specific applications.  The brand guideline
+publishes the **palette**; surfaces decide how to spend it.
+
+##### Naming and provenance
+
+- Add new semantic roles only when an existing role can't carry the meaning.
+  "Highlight" and "needs attention" share `--attention`; "warning" and
+  "caution" share `--caution`; recognition and duplication share
+  `--familiar`.
+- Light/dark pairs are mandatory for every semantic role.  The pair
+  preserves the same perceived saturation against each background, not the
+  same hex.
+- Hexes here are the canonical reference; surface stylesheets MUST cite
+  this section when they define their CSS-variable defaults.
+
+#### Corporate website subset
+
+The corporate website is light-only and uses a restrained subset of the
+brand palette: structural roles plus `accent`, `accent secondary`, and a
+flat decoration philosophy (no gradients, no shadows, no elevation).  Links
+use the brand accent; visited links use a darker shade.  Interactive states
+(hover, focus) are subtle — underline weight change or opacity shift, never
+colour animation.
+
+The full semantic palette is intended primarily for the product app and
+identity screens, where status indication (success, caution, attention,
+danger) is part of the user task.
 
 ### Brand Identity
 

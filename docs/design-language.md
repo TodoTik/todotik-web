@@ -110,7 +110,7 @@ called `cyan` would have to be renamed.
 | **Accent secondary** | `#304050` | `#7C8A9E` | Logo wordmark, heading text alternative (the corporate website uses this in the header) |
 | **Success** | `#43A047` | `#66BB6A` | Verified factors, completed actions, confirmations |
 | **Caution** | `#E8A838` | `#F0C869` | Recoverable issues, soft warnings — *something might be wrong, proceed carefully*; orange-leaning amber, distinct from attention and familiarity |
-| **Attention** | `#F4C100` | `#FFD93D` | "Needs action" / "needs attention" — vibrant, glowing gold; signals that the user is being prompted to do something **without** implying anything is wrong |
+| **Attention** | `#A87F00` | `#FFD93D` | "Needs action" / "needs attention" — gold; signals that the user is being prompted to do something **without** implying anything is wrong.  Light-scheme value chosen for legibility on white (≈3.7:1 contrast, large-text AA); dark-scheme value is vivid glow |
 | **Danger** | `#C44444` | `#E57373` | Destructive operations, errors, irrecoverable failures |
 | **Info** | `#4A6FA5` | `#7B9FCF` | Neutral informational notices — distinct from secondary text; use only when the visual signal "this is information" carries weight |
 | **Familiarity** | `#E6A94D` | `#E6B870` | Recognised entities, duplicates, déjà vu — desaturated "old paper" amber |

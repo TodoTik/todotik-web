@@ -83,7 +83,34 @@ Large binaries (press-kit ZIPs, high-resolution PNG exports, background
 illustrations) live in the `todotik-public` R2 bucket, not in this
 repo. Generated favicons and PWA icons live in `todotik-identity`
 `src/assets/icons.ts` (base64, bundled at build time). This folder
-holds vector source only.
+holds vector source plus the historical originals described below.
+
+## Historical originals
+
+Two subfolders hold preserved 2023-11 originals.  They are reference
+material, not part of the canonical generation path.
+
+`source-components/` — eight SVG components from 23 Nov 2023: the
+three shape parts (`logochevron.svg`, `logocheckmark.svg`,
+`logoparallelogram.svg`) and the five distinct letters of
+T-O-D-O-T-I-K (`logotext_d.svg`, `logotext_i.svg`, `logotext_k.svg`,
+`logotext_o.svg`, `logotext_t.svg`).  These are the source pieces
+that were composited into the three top-level SVGs above.
+
+`maskable-icons/` — two PWA maskable PNGs (192 × 192 and 512 × 512),
+generated 2023-11-24.  Likely produced by
+[maskable.app](https://maskable.app/) based on the PNG chunk
+fingerprint: only `IHDR`, `sRGB`, `IDAT`, `IEND` chunks present (no
+`Software`, `Author`, `Comment`, `tIME`, or `pHYs` tags); both files
+share an identical creation timestamp; both sizes match maskable.app's
+default exports.  This rules out Photoshop / Sketch / Figma /
+Illustrator (would embed `Software` or `Adobe`), ImageMagick (would
+embed `Software: ImageMagick`), Real Favicon Generator (would embed
+`Comment`), and PWA Builder (would embed `tEXt` + `tIME`).  For new
+maskable variants prefer the Sharp + librsvg pipeline in
+`todotik-identity/scripts/generate-icons.mjs` (see
+`../../docs/icon-rendering.md`); these PNGs are kept only as
+historical originals.
 
 ## Changing the logo
 

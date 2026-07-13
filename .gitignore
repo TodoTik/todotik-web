@@ -1,0 +1,10 @@
+# Claude Code
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
+.claude/launch.json
+.claude/handoff-*.md
+.claude/worktrees/
+
+# OS
+.DS_Store
+Thumbs.db

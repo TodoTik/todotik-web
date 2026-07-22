@@ -2,12 +2,12 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: todotik-web
-  title: "todotik-web"
-  description: "TODO: one-line description (curated)."
-  tags: []
+  title: "TodoTik Web"
+  description: "Public company website for todotik.com, deployed to Cloudflare Pages."
+  tags: [website, public, cloudflare-pages]
   annotations:
     backstage.io/source-location: url:https://github.com/TodoTik/todotik-web/
-    todotik.io/classification: Proprietary
+    todotik.io/classification: Public
     todotik.io/entity: shared
     todotik.io/sovereign: none
     todotik.io/provenance: original
@@ -16,7 +16,7 @@ metadata:
     todotik.io/surveyed-commit: "d816ce8"
     # }} estate:survey
 spec:
-  type: service
+  type: website
   lifecycle: production
   owner: group:platform
   # estate:metrics — managed by scripts/estate, do not edit {{

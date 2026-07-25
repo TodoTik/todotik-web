@@ -9,6 +9,10 @@ on:
     types: [opened, synchronize]
 
 permissions:
+  # actions: read — the called workflow's respond job lists workflow runs
+  # for its cycle guard.  A called workflow may not request more than its
+  # caller grants, so omitting this fails the whole run at startup.
+  actions: read
   contents: write
   pull-requests: write
   issues: write

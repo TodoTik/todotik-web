@@ -1,12 +1,62 @@
 #!/bin/sh
-# TodoTik org policy: developers are responsible for their commits, not AI.
-# Reject commit messages containing AI co-authorship lines.
-# Uses extended regex (-E) for clarity; case-insensitive (-i).
+# TodoTik org policy: a commit message never asserts authorship.
+#
+# Authorship is git's own Author field, and it belongs to the responsible
+# human developer.  The message body may not claim, share, delegate, or
+# credit it — not to an AI, and not to a human either.  Both directions are
+# prohibited: an AI crediting itself is a false claim, and an AI crediting a
+# human as "co-author" of work that human authored alone is equally false.
+#
+# Blocks any authorship trailer whoever is named, plus AI generation credits.
+# Signed-off-by is untouched: a DCO sign-off certifies the right to submit,
+# which is not an authorship claim.
+#
+# Uses POSIX extended regex (-E), case-insensitive (-i).
 
-if grep -iqE "^[[:space:]]*co-authored-by:.*(claude|chatgpt|gpt-[0-9]|copilot|gemini|anthropic|openai|noreply@anthropic)" "$1"; then
+msg_file="$1"
+
+# Drop git's comment lines first — they are stripped before the message is
+# stored, so an example inside them was never going to be committed.
+body=$(grep -v '^[[:space:]]*#' "$msg_file")
+
+reject() {
     echo "" >&2
-    echo "  Commit rejected: AI co-authorship line detected." >&2
-    echo "  Remove any 'Co-Authored-By:' lines referencing AI assistants and try again." >&2
+    echo "  Commit rejected: $1" >&2
+    echo "" >&2
+    echo "  TodoTik policy: commit messages never assert authorship or" >&2
+    echo "  co-authorship — not for an AI, not for a human. The commit's" >&2
+    echo "  Author field already records the responsible developer." >&2
+    echo "" >&2
+    echo "  Offending line:" >&2
+    echo "    $2" >&2
+    echo "" >&2
+    echo "  Remove the line and commit again." >&2
     echo "" >&2
     exit 1
+}
+
+# 1. Any authorship trailer, regardless of who is named.  Covers
+#    Co-authored-by, Co-Authored-By, Coauthored by, Authored-by, Author:.
+hit=$(printf '%s\n' "$body" |
+    grep -iE '^[[:space:]]*(co[-[:space:]]?)?auth(or|ored)([-[:space:]]?by)?[[:space:]]*:' |
+    head -1)
+if [ -n "$hit" ]; then
+    reject "authorship trailer detected." "$hit"
+fi
+
+# 2. AI generation/assistance credits in prose form, e.g.
+#    "Generated with Claude Code", "written by ChatGPT".
+hit=$(printf '%s\n' "$body" |
+    grep -iE '(generated|created|written|authored|produced|assisted)[-[:space:]]+(with|by)[[:space:]]+.*(claude|chatgpt|gpt-?[0-9]|copilot|gemini|anthropic|openai|llm)' |
+    head -1)
+if [ -n "$hit" ]; then
+    reject "AI generation credit detected." "$hit"
+fi
+
+# 3. Bare attribution trailers, e.g. "Assisted-by:", "Generated-by:".
+hit=$(printf '%s\n' "$body" |
+    grep -iE '^[[:space:]]*(assisted|generated|created|produced)-by[[:space:]]*:' |
+    head -1)
+if [ -n "$hit" ]; then
+    reject "attribution trailer detected." "$hit"
 fi

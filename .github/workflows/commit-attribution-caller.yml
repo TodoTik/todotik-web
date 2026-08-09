@@ -1,0 +1,59 @@
+name: Commit attribution
+
+# Classification: Public.
+#
+# ATTRIB-NOAI: an agent makes no authorship claim — not its own, not anyone
+# else's.  Two shapes fail: AI attribution, and a co-authorship trailer of any
+# kind, whoever is named.  A `Co-authored-by:` line asserts a *co*-author, and
+# therefore some other primary author, on work committed under the author's own
+# identity.
+#
+# Every other repository in the estate calls todotik-ops' reusable workflow.
+# This repository is public and that workflow is in a private repository, which
+# GitHub does not permit: the run resolves no workflow and creates no job.  The
+# steps are therefore spelled out here.  The check itself is still the single
+# copy in todotik-ops, read at run time — only the surrounding job is local.
+#
+# A pull request from a fork receives no secrets, so the check cannot fetch and
+# the job fails rather than passing unverified.
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  attribution:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Full history: the range walks from the merge base, which a shallow
+          # clone cannot resolve.
+          fetch-depth: 0
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.14"
+
+      - name: Fetch the check
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          set -euo pipefail
+          gh api repos/TodoTik/todotik-ops/contents/scripts/commit_attribution.py \
+            -H "Accept: application/vnd.github.raw+json" > commit_attribution.py
+
+      - name: Check commit messages
+        run: |
+          set -euo pipefail
+          if [ -n "${{ github.event.pull_request.base.sha }}" ]; then
+            range="${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}"
+          else
+            range="${{ github.event.before }}..${{ github.sha }}"
+          fi
+          echo "[commit-attribution] range: $range"
+          python commit_attribution.py --range "$range"

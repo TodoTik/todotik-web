@@ -60,6 +60,28 @@ Below these sizes, use the mark alone or drop the logo entirely.
 | Social profile image | `logo.svg` over white or navy |
 | Social share preview / OG image | `logo-with-text.svg` on white or navy background |
 
+## Mark colour: prominent display vs chrome
+
+Brand cyan is for the mark's **prominent displays** — where the mark is
+presented as the brand rather than doing a job: splash and hero
+placements, marketing surfaces, share images, an about screen.  There
+the cyan is the point, and it is used as-is.
+
+Where the mark appears as **chrome** — a navigation control, a title
+bar, a footer — it takes the surrounding text colour (`currentColor` in
+a web frontend) rather than cyan.  Chrome is furniture: the mark is
+identifying the product, not advertising it, and matching the text it
+sits beside is what keeps it legible on both light and dark themes
+without a per-theme exception.  This is not a recolouring in the sense
+the *Don't* list forbids: the mark is not being restyled to a new
+palette, it is inheriting the one already governing that surface, the
+same licence the institutional-footer row above has always carried.
+
+Cyan measures 2.05:1 on white — a decorative value, adequate for a
+logotype and inadequate for anything a user must read or click.  That
+is why chrome does not lean on it: in chrome the control's own surface
+supplies the affordance, never the glyph's colour.
+
 ## Do
 
 - Scale proportionally. SVG is resolution-independent — use it wherever possible.
@@ -112,9 +134,32 @@ maskable variants prefer the Sharp + librsvg pipeline in
 `../../docs/icon-rendering.md`); these PNGs are kept only as
 historical originals.
 
+## Where the mark lives
+
+Copies of the logo are permitted where a repository cannot depend on
+this folder, on one condition: **brand knows about every one of them.**
+This register is that knowledge — the checklist a logo change walks, so
+no copy is left showing yesterday's mark.  A copy that is not listed
+here is a defect in this file, not in the copy; add the row.
+
+Consuming a shared package is **not** a copy and earns no row: a
+frontend that renders `<BrandMark />` from `@todotik/react-components`
+follows this folder automatically.
+
+| Location | Holds | Kept in step by |
+|----------|-------|-----------------|
+| `todotik-web/assets/brand/` (this folder) | The three canonical SVGs | It is the authority |
+| `todotik-common` — `packages/react-components` `<BrandMark />` | The mark's path data, inline in a shared component | Update the component from `logo.svg`; every product frontend follows by version bump |
+| `todotik.com/src/assets/logo.svg` | Byte-identical copy of `logo.svg` | Copy the file again |
+| `todotik.com/public/favicon.ico`, `favicon16.png`, `favicon32.png` | Generated rasters | The Sharp + librsvg pipeline (`../../docs/icon-rendering.md`) |
+| `todotik-identity/src/assets/icons.ts` | Generated favicons and PWA icons, base64, bundled at build | `node scripts/generate-icons.mjs` |
+| `www.todotik.com/favicon.ico`, `favicon-16x16.png`, `favicon-32x32.png` | Generated rasters in a deployed-copy repo | Regenerate through the pipeline and redeploy — never hand-edited |
+
 ## Changing the logo
 
 1. Update the SVG(s) in this folder.
 2. Regenerate downstream icons: `cd ../../../todotik-identity && node scripts/generate-icons.mjs`.
 3. Review the diff in `todotik-identity/src/assets/icons.ts`.
-4. Commit the SVG change and the regenerated icons module together, in that order, with a commit message noting the logo change.
+4. Walk every remaining row of *Where the mark lives* above and update it
+   by the means its row names.
+5. Commit the SVG change and the regenerated icons module together, in that order, with a commit message noting the logo change.  Each other repository's update is its own commit, referencing the same change.

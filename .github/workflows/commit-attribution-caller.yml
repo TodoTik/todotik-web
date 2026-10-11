@@ -18,6 +18,10 @@ name: Commit attribution
 # the job fails rather than passing unverified.
 on:
   pull_request:
+    # `edited` re-checks the title and description when either is changed; the
+    # default types do not fire on an edit, so a footer added after the first
+    # green run would otherwise pass unseen.
+    types: [opened, synchronize, reopened, edited]
   push:
     branches: [main]
   workflow_dispatch:

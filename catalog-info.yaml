@@ -7,10 +7,10 @@ metadata:
   tags: [website, public, cloudflare-pages]
   annotations:
     backstage.io/source-location: url:https://github.com/TodoTik/todotik-web/
-    todotik.io/classification: Public
-    todotik.io/entity: shared
-    todotik.io/sovereign: none
-    todotik.io/provenance: original
+    todotik.net/classification: Public
+    todotik.net/entity: shared
+    todotik.net/sovereign: none
+    todotik.net/provenance: original
     # estate:survey — managed by the estate catalog tool, do not edit {{
     todotik.net/surveyed-at: "2026-10-12T22:53:22+00:00"
     todotik.net/surveyed-commit: "6e6d81d"

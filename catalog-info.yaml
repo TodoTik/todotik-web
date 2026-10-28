@@ -12,8 +12,8 @@ metadata:
     todotik.net/sovereign: none
     todotik.net/provenance: original
     # estate:survey — managed by the estate catalog tool, do not edit {{
-    todotik.net/surveyed-at: "2026-10-15T04:17:26+00:00"
-    todotik.net/surveyed-commit: "2b641ac"
+    todotik.net/surveyed-at: "2026-10-28T23:14:34+00:00"
+    todotik.net/surveyed-commit: "b6a4529"
     # }} estate:survey
 spec:
   type: website

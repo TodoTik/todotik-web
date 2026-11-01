@@ -1,0 +1,13 @@
+#!/bin/sh
+# Offer the commit template when git opens the editor for a new message: a
+# plain `git commit`, with no message of its own (-m, -F), and no merge,
+# squash, amend or other template.  Every template line is a comment, so git
+# strips it and nothing of it reaches the commit.
+[ -z "${2:-}" ] || exit 0
+template="$(dirname "$0")/commit-template"
+[ -f "$template" ] || exit 0
+{
+    printf '\n'
+    cat "$template"
+    cat "$1"
+} > "$1.template" && mv "$1.template" "$1"

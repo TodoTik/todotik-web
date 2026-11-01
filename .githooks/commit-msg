@@ -1,5 +1,9 @@
 #!/bin/sh
-# TodoTik org policy: co-/authorship belongs to natural persons only.
+# TodoTik org policy for commit messages.
+#
+# The header follows Conventional Commits 1.0.0: type[(scope)][!]: description.
+#
+# Co-/authorship belongs to natural persons only.
 #
 # A commit message may name a person as author or co-author, or name no one;
 # it never attributes co-/authorship to a tool — an AI assistant, an agent, a
@@ -42,6 +46,107 @@ reject() {
     echo "" >&2
     exit 1
 }
+
+reject_header() {
+    echo "" >&2
+    echo "  Commit rejected: $1" >&2
+    echo "" >&2
+    echo "  TodoTik commit messages follow Conventional Commits 1.0.0" >&2
+    echo "  (https://www.conventionalcommits.org/en/v1.0.0/):" >&2
+    echo "" >&2
+    echo "    <type>[(<scope>)][!]: <description>" >&2
+    echo "" >&2
+    echo "    [body]" >&2
+    echo "" >&2
+    echo "  type: ${commit_types}" >&2
+    echo "  scope: lower case; description: imperative, no trailing period;" >&2
+    echo "  header at most 100 characters; one blank line before a body." >&2
+    echo "  A revert keeps git's 'Revert \"...\"' header, or uses 'revert: ...';" >&2
+    echo "  either way its body keeps 'This reverts commit <full hash>.'" >&2
+    echo "  A merge commit keeps git's 'Merge ...' header." >&2
+    echo "" >&2
+    echo "  Header:" >&2
+    echo "    $2" >&2
+    echo "" >&2
+    exit 1
+}
+
+# 0. The header.  Three shapes pass:
+#    - a Conventional Commits header: type[(scope)][!]: description, at most
+#      100 characters, no trailing period;
+#    - a revert: git's own Revert "..." or Reapply "..." header, which quotes
+#      the reverted commit's header and so has no length limit, or a revert:
+#      header; either way the body keeps git's "This reverts commit <full
+#      hash>." line;
+#    - a merge commit, one with two or more parents, under git's Merge ...
+#      header: its parents record what was merged, and each merged commit is
+#      checked on its own.  Locally a merge is in progress while MERGE_HEAD
+#      exists; CI says so with COMMIT_MERGE=1.
+#    Every message has one blank line between the header and any body.  A
+#    commit marked for autosquash (fixup!, squash!, amend!) is folded into its
+#    target before the branch merges, so the local hook judges the header
+#    after the marker; in CI the marker itself is rejected, since such a
+#    commit would otherwise land in the permanent record.
+commit_types='feat|fix|docs|refactor|perf|test|build|ci|style|chore|revert'
+# git ends the line with a period, or, reverting a merge, with a comma and
+# "reversing changes made to <hash>."
+revert_line='^This reverts commit ([0-9a-f]{40}|[0-9a-f]{64})[.,]'
+header=$(printf '%s\n' "$body" | sed -n '1p')
+if [ -z "$header" ] && [ -n "$(printf '%s' "$body" | tr -d '[:space:]')" ]; then
+    reject_header "the message does not start with its header." "(a blank first line)"
+fi
+if [ -n "$header" ]; then
+    checked=$header
+    case "$header" in
+    'fixup! '* | 'squash! '* | 'amend! '*)
+        if [ -n "${CI:-}" ]; then
+            reject_header "an autosquash commit is folded into its target before merging." "$header"
+        fi
+        checked=$(printf '%s\n' "$header" | sed -E 's/^((fixup|squash|amend)! )+//')
+        ;;
+    esac
+    merge=
+    if [ "${COMMIT_MERGE:-}" = 1 ] || git rev-parse -q --verify MERGE_HEAD >/dev/null 2>&1; then
+        merge=1
+    fi
+    reverts=
+    if printf '%s\n' "$body" | grep -qE "$revert_line"; then
+        reverts=1
+    fi
+    case "$checked" in
+    'Merge '*)
+        if [ -z "$merge" ]; then
+            reject_header "only a merge commit takes git's Merge header." "$header"
+        fi
+        ;;
+    'Revert "'*'"' | 'Reapply "'*'"')
+        if [ -z "$reverts" ]; then
+            reject_header "a revert keeps git's line 'This reverts commit <full hash>.'" "$header"
+        fi
+        ;;
+    *)
+        if ! printf '%s\n' "$checked" |
+            grep -qE "^(${commit_types})(\([a-z0-9][a-z0-9._/-]*\))?!?: [^[:space:]]"; then
+            reject_header "the header is not <type>[(<scope>)][!]: <description>." "$header"
+        fi
+        case "$checked" in
+        *.) reject_header "the description ends with a period." "$header" ;;
+        revert:* | 'revert!'* | revert\(*) if [ -z "$reverts" ]; then
+            reject_header "a revert keeps git's line 'This reverts commit <full hash>.'" "$header"
+        fi ;;
+        esac
+        # Characters, not bytes: the C locale counts bytes, so leave out the
+        # UTF-8 continuation bytes and count what remains.
+        length=$(printf '%s' "$checked" | tr -d '\200-\277' | wc -c | tr -d '[:space:]')
+        if [ "$length" -gt 100 ]; then
+            reject_header "the header is $length characters; at most 100." "$header"
+        fi
+        ;;
+    esac
+    if [ -n "$(printf '%s\n' "$body" | sed -n '2p' | tr -d '[:space:]')" ]; then
+        reject_header "the header is not followed by a blank line." "$header"
+    fi
+fi
 
 # 1. A co-/authorship trailer (Co-authored-by, Coauthored by, Co-author,
 #    Author, Authored-by) whose value points to an AI: an assistant, model or

@@ -57,6 +57,7 @@ Below these sizes, use the mark alone or drop the logo entirely.
 | App header, app icon, favicon, PWA icon | `logo.svg` (mark only) |
 | Legal / institutional footer | `logo.svg` (muted, secondary text colour area) |
 | Email signature, press release header | `logo-with-text.svg` |
+| Email TodoTik sends (the letterhead's header) | `logo-with-text.svg`, rasterised to an embedded PNG on an opaque white plate (email clients render no SVG) |
 | Social profile image | `logo.svg` over white or navy |
 | Social share preview / OG image | `logo-with-text.svg` on white or navy background |
 
@@ -150,6 +151,7 @@ follows this folder automatically.
 |----------|-------|-----------------|
 | `todotik-web/assets/brand/` (this folder) | The three canonical SVGs | It is the authority |
 | `todotik-common` — `packages/react-components` `<BrandMark />` | The mark's path data, inline in a shared component | Update the component from `logo.svg`; every product frontend follows by version bump |
+| `todotik-common` — `packages/letterhead/frame/assets/logo-with-text.svg` | Byte-identical copy of `logo-with-text.svg` (SHA-256 `602ea3028c9704d6c4262681ca7684f6fd941d24e1e681b7e584ed95a5d91f99`), rasterised at the package's build into the email header's embedded PNG: the pipeline of `../../docs/icon-rendering.md`, plus palette quantisation without dithering | Copy the file again, update the hash here and in the package's test, and release `@todotik/letterhead` |
 | `todotik.com/src/assets/logo.svg` | Byte-identical copy of `logo.svg` | Copy the file again |
 | `todotik.com/public/favicon.ico`, `favicon16.png`, `favicon32.png` | Generated rasters | The Sharp + librsvg pipeline (`../../docs/icon-rendering.md`) |
 | `todotik-identity/src/assets/icons.ts` | Generated favicons and PWA icons, base64, bundled at build | `node scripts/generate-icons.mjs` |

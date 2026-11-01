@@ -1,0 +1,6 @@
+# <type>(<scope>): <what this commit does>
+#
+# <why, if it is not obvious>
+#
+# type: feat fix docs refactor perf test build ci style chore revert
+# breaking change: add ! before the colon

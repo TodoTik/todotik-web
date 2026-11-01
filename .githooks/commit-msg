@@ -1,17 +1,24 @@
 #!/bin/sh
-# TodoTik org policy: a commit message never asserts authorship.
+# TodoTik org policy: co-/authorship belongs to natural persons only.
 #
-# Authorship is git's own Author field, and it belongs to the responsible
-# human developer.  The message body may not claim, share, delegate, or
-# credit it — not to an AI, and not to a human either.  Both directions are
-# prohibited: an AI crediting itself is a false claim, and an AI crediting a
-# human as "co-author" of work that human authored alone is equally false.
+# A commit message may name a person as author or co-author, or name no one;
+# it never attributes co-/authorship to a tool — an AI assistant, an agent, a
+# bot.  Tools are not people, and only people can be authors.
 #
-# Blocks any authorship trailer whoever is named, plus AI generation credits.
+# Blocks co-/authorship trailers that point to an AI, plus AI generation credits,
+# provenance trailers that name a tool or its session (Claude-Session:,
+# Generated-By:, AI-Assisted:, X-AI-...), and links to an assistant's session
+# or conversation.  A session reference says which tool worked on the commit,
+# which is attribution by another name.
 # Signed-off-by is untouched: a DCO sign-off certifies the right to submit,
 # which is not an authorship claim.
 #
-# Uses POSIX extended regex (-E), case-insensitive (-i).
+# Uses POSIX extended regex (-E), case-insensitive (-i).  POSIX has no \b, so
+# a word boundary is spelled out as the character that is not a word character
+# (see rule 2).  The C locale makes "word character" mean the same ASCII set
+# here as in scripts/commit_attribution.py, whatever the committer's locale.
+LC_ALL=C
+export LC_ALL
 
 msg_file="$1"
 
@@ -23,9 +30,10 @@ reject() {
     echo "" >&2
     echo "  Commit rejected: $1" >&2
     echo "" >&2
-    echo "  TodoTik policy: commit messages never assert authorship or" >&2
-    echo "  co-authorship — not for an AI, not for a human. The commit's" >&2
-    echo "  Author field already records the responsible developer." >&2
+    echo "  TodoTik policy: co-/authorship belongs to natural persons only." >&2
+    echo "  A trailer may name a person as author or co-author, or be left" >&2
+    echo "  out, but never names an AI tool, agent or bot. A tool's session" >&2
+    echo "  trailer or session link is the same attribution." >&2
     echo "" >&2
     echo "  Offending line:" >&2
     echo "    $2" >&2
@@ -35,19 +43,63 @@ reject() {
     exit 1
 }
 
-# 1. Any authorship trailer, regardless of who is named.  Covers
-#    Co-authored-by, Co-Authored-By, Coauthored by, Authored-by, Author:.
+# 1. A co-/authorship trailer (Co-authored-by, Coauthored by, Co-author,
+#    Author, Authored-by) whose value points to an AI: an assistant, model or
+#    agent name, a [bot] account, or an AI vendor's address, as a whole word.
+#    A trailer whose email address the repository's contributors file lists,
+#    compared whole, passes whatever its name; without such a file nobody is
+#    listed.  Keep ai_identities and
+#    contributor_files identical to AI_IDENTITIES and CONTRIBUTOR_FILES, and
+#    the trailer pattern in step with AUTHORSHIP_TRAILER, in
+#    scripts/commit_attribution.py.
+ai_identities='claude|anthropic|chatgpt|openai|gpt(-?[0-9][a-z0-9]*)?|copilot|gemini|cursor|codex|windsurf|aider|devin|llms?|ai|assistant|bot'
+contributor_files='AUTHORS AUTHORS.md AUTHORS.txt CONTRIBUTORS CONTRIBUTORS.md CONTRIBUTORS.txt'
+wb='[^[:alnum:]_]'
+root=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
+addresses=$(for f in $contributor_files; do
+    [ -f "$root/$f" ] && grep -oE '[[:alnum:]._%+-]+@[[:alnum:].-]+' "$root/$f"
+done)
 hit=$(printf '%s\n' "$body" |
     grep -iE '^[[:space:]]*(co[-[:space:]]?)?auth(or|ored)([-[:space:]]?by)?[[:space:]]*:' |
-    head -1)
+    while IFS= read -r line; do
+        value=${line#*:}
+        # A listed person is matched by their whole email address only.
+        key=$(printf '%s\n' "$value" | sed -n 's/.*<\([^>]*\)>.*/\1/p' |
+            sed 's/^[[:space:]]*//; s/[[:space:]]*$//')
+        if [ -n "$key" ] && [ -n "$addresses" ] &&
+            printf '%s\n' "$addresses" | grep -qixF -- "$key"; then
+            continue
+        fi
+        if printf '%s\n' "$value" | grep -qiE "(^|${wb})(${ai_identities})(\$|${wb})"; then
+            printf '%s\n' "$line"
+            break
+        fi
+    done)
 if [ -n "$hit" ]; then
-    reject "authorship trailer detected." "$hit"
+    reject "AI co-/authorship trailer detected." "$hit"
 fi
 
 # 2. AI generation/assistance credits in prose form, e.g.
-#    "Generated with Claude Code", "written by ChatGPT".
+#    "Generated with Claude Code", "written by ChatGPT", "Assisted by: Claude":
+#    a credit verb, "with" or "by", then an assistant's name later on the same
+#    line.  The verb and the name are whole words, so "regenerated with" and
+#    the "llm" inside "Allman" are not credits.  A boundary is the line edge or
+#    a character that is not a letter, digit or underscore; it is consumed, so
+#    the one after "with" or "by" doubles as the one before the name.  A name
+#    in direct_ai_names has no gap: only an optional colon and blanks may sit
+#    between "with" or "by" and it, so "text produced by the cursor handler"
+#    is not a credit.  Also the noreply address and the robot-emoji tagline.
+#    Keep ai_names, direct_ai_names and credit_verbs identical to AI_NAMES,
+#    AI_DIRECT_NAMES and AI_CREDIT_VERBS, and the pattern in step with
+#    AI_ATTRIBUTION, in scripts/commit_attribution.py.
+ai_names='claude|chatgpt|gpt-?[0-9][a-z0-9]*|copilot|gemini|anthropic|openai|llms?'
+direct_ai_names='cursor'
+credit_verbs='generated|created|written|authored|produced|assisted'
+# A co-/authorship trailer is judged by rule 1 alone: its "authored by" is
+# not a credit verb, so a listed person named like a tool passes.
 hit=$(printf '%s\n' "$body" |
-    grep -iE '(generated|created|written|authored|produced|assisted)[-[:space:]]+(with|by)[[:space:]]+.*(claude|chatgpt|gpt-?[0-9]|copilot|gemini|anthropic|openai|llm)' |
+    grep -viE '^[[:space:]]*(co[-[:space:]]?)?auth(or|ored)([-[:space:]]?by)?[[:space:]]*:' |
+    grep -iE "(^|${wb})(${credit_verbs})[-[:blank:]]+(with|by)(${wb}(.*${wb})?(${ai_names})|[[:blank:]:]+(${direct_ai_names}))(\$|${wb})|(^|${wb})noreply@anthropic(\$|${wb})|🤖[[:blank:]]*generated" |
     head -1)
 if [ -n "$hit" ]; then
     reject "AI generation credit detected." "$hit"
@@ -59,4 +111,28 @@ hit=$(printf '%s\n' "$body" |
     head -1)
 if [ -n "$hit" ]; then
     reject "attribution trailer detected." "$hit"
+fi
+
+# 4. Provenance trailers naming a tool or its session, e.g.
+#    "Claude-Session: ...", "AI-Assisted: yes", "X-AI-Tool: ...".  The tool
+#    name must pair with a marker word, so a line that merely mentions a tool
+#    does not match.  Keep in step with AI_PROVENANCE_TRAILER in
+#    scripts/commit_attribution.py.
+tools='(claude|anthropic|chatgpt|openai|gpt|copilot|gemini|cursor|codex|windsurf|aider|devin)'
+markers='(session|conversation|chat|thread|transcript|model|agent|task|assisted|generated|provenance|link|url)'
+ai_markers='(assisted|generated|authored|written|created|produced|model|tool|agent|assistant|session|conversation|provenance)'
+hit=$(printf '%s\n' "$body" |
+    grep -iE "^[[:space:]]*(x-ai(-[a-z0-9_-]+)?|ai-${ai_markers}|([a-z0-9]+[-_]){0,2}${tools}([-_][a-z0-9]+)*[-_]${markers}([-_][a-z0-9]+)*)[[:space:]]*:" |
+    head -1)
+if [ -n "$hit" ]; then
+    reject "AI provenance trailer detected." "$hit"
+fi
+
+# 5. Links to an assistant's session or conversation, in a trailer or in
+#    prose.  Keep in step with AI_SESSION_URL in scripts/commit_attribution.py.
+hit=$(printf '%s\n' "$body" |
+    grep -iE 'claude\.(ai|com)/(code/session|chat/|share/)|(chatgpt\.com|chat\.openai\.com)/(share|c/)|github\.com/copilot/(c|chats?|tasks?|agents?|sessions?|share)/|github\.com/[^[:space:]]*agent-sessions/|copilot\.microsoft\.com/(chats?|shares?|sessions?)/|gemini\.google\.com/(app|share)/[a-z0-9]|cursor\.com/agents/' |
+    head -1)
+if [ -n "$hit" ]; then
+    reject "AI session link detected." "$hit"
 fi

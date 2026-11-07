@@ -1,0 +1,20 @@
+name: Feature freeze
+
+# REL-FREEZE (todotik-ops docs/release-policy.md): a feature pull request may
+# not newly target a feature-frozen release — one whose milestone has a due
+# date.  The check lives once in todotik-ops's reusable workflow; this file
+# calls it on the pull request's milestoned event.
+on:
+  pull_request:
+    types: [milestoned]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  freeze:
+    uses: TodoTik/todotik-ops/.github/workflows/feature-freeze.yml@main
+    secrets:
+      GH_PAT: ${{ secrets.GH_PAT }} # reads the gate from the private ops repo

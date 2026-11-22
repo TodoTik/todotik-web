@@ -57,7 +57,7 @@ Below these sizes, use the mark alone or drop the logo entirely.
 | App header, app icon, favicon, PWA icon | `logo.svg` (mark only) |
 | Legal / institutional footer | `logo.svg` (muted, secondary text colour area) |
 | Email signature, press release header | `logo-with-text.svg` |
-| Email TodoTik sends (the letterhead's header) | `logo-with-text.svg`, rasterised to an embedded PNG on an opaque white plate (email clients render no SVG) |
+| Email TodoTik sends (the letterhead's header) | `logo-with-text.svg`, rasterised to an embedded PNG on an opaque white plate (Gmail and Outlook for Windows render no SVG) |
 | Social profile image | `logo.svg` over white or navy |
 | Social share preview / OG image | `logo-with-text.svg` on white or navy background |
 
